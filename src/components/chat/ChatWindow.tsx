@@ -12,8 +12,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   useGetChatMessagesQuery,
   useSendMessageMutation,
-  useMarkMessagesAsReadMutation,
-  useUploadFileMutation
+  useMarkMessagesAsReadMutation
 } from '@/store/api/apiSlice';
 import { Send, Paperclip, Image, File, Download, Eye, X, MessageCircle, CheckCheck } from 'lucide-react';
 import { toast } from 'sonner';
@@ -60,7 +59,6 @@ export default function ChatWindow({
 
   const [sendMessageMutation, { isLoading: isSending }] = useSendMessageMutation();
   const [markAsRead] = useMarkMessagesAsReadMutation();
-  const [uploadFile] = useUploadFileMutation();
 
   // Combine database messages with real-time messages, avoiding duplicates
   const allMessages = useMemo(() => {
@@ -172,9 +170,19 @@ export default function ChatWindow({
         const formData = new FormData();
         formData.append('file', selectedFile);
         formData.append('documentType', 'chat_files');
-        formData.append('applicationId', applicationId);
+        formData.append('applicationId', chatId); // Use chatId for better organization
 
-        const uploadResult = await uploadFile(formData).unwrap();
+        // Upload to MinIO via the files/upload API
+        const response = await fetch('/api/files/upload', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to upload file');
+        }
+
+        const uploadResult = await response.json();
         fileUrl = uploadResult.file.fileUrl;
         fileName = uploadResult.file.originalName;
 
@@ -237,25 +245,26 @@ export default function ChatWindow({
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      // Check file size (max 10MB)
-      if (file.size > 10 * 1024 * 1024) {
-        toast.error('File size must be less than 10MB');
+      // Check file size (max 50MB for chat files)
+      if (file.size > 50 * 1024 * 1024) {
+        toast.error('File size must be less than 50MB');
         return;
       }
 
-      // Validate file type
+      // Enhanced file type validation for chat files
       const allowedTypes = [
-        'image/jpeg', 'image/png', 'image/gif', 'image/webp',
-        'application/pdf', 'application/msword', 'text/plain',
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-        'application/vnd.ms-excel',
-        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        'application/vnd.ms-powerpoint',
-        'application/vnd.openxmlformats-officedocument.presentationml.presentation'
+        'image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml',
+        'application/pdf', 'text/plain', 'text/csv',
+        'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'application/vnd.ms-powerpoint', 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+        'application/zip', 'application/x-rar-compressed',
+        'video/mp4', 'video/avi', 'video/mov',
+        'audio/mpeg', 'audio/wav', 'audio/ogg'
       ];
 
       if (!allowedTypes.includes(file.type)) {
-        toast.error('File type not supported');
+        toast.error('File type not supported for chat. Supported: images, documents, videos, audio files');
         return;
       }
       setSelectedFile(file);
@@ -587,7 +596,7 @@ export default function ChatWindow({
             <input
               ref={fileInputRef}
               type="file"
-              accept="image/*,.pdf,.doc,.docx,.txt,.xlsx,.ppt,.pptx"
+              accept="image/*,.pdf,.doc,.docx,.txt,.csv,.xlsx,.ppt,.pptx,.zip,.rar,video/*,audio/*"
               onChange={handleFileSelect}
               className="hidden"
             />

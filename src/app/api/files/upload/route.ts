@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth/config';
 import { connectDB } from '@/lib/db/connection';
-import { uploadToMinio } from '@/lib/minio';
+import { uploadToMinio, uploadChatFile } from '@/lib/minio';
 import FileUpload from '@/lib/db/models/FileUpload';
 import { logApiRequest, logApiResponse, logError, logFileOperation, logInfo } from '@/lib/logger';
 
@@ -17,6 +17,21 @@ const DOCUMENT_CONFIGS = {
     'image/webp',
     'application/msword',
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+  ]
+};
+
+// Chat files have more permissive settings
+const CHAT_FILE_CONFIGS = {
+  maxSize: 50 * 1024 * 1024, // 50MB for chat files
+  allowedTypes: [
+    'image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml',
+    'application/pdf', 'text/plain', 'text/csv',
+    'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'application/vnd.ms-powerpoint', 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    'application/zip', 'application/x-rar-compressed',
+    'video/mp4', 'video/avi', 'video/mov',
+    'audio/mpeg', 'audio/wav', 'audio/ogg'
   ]
 };
 
@@ -84,33 +99,39 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Document type is required' }, { status: 400 });
     }
 
+    // Choose configuration based on document type
+    const isChat = documentType === 'chat_files';
+    const config = isChat ? CHAT_FILE_CONFIGS : DOCUMENT_CONFIGS;
+
     // Validate file size
-    if (file.size > DOCUMENT_CONFIGS.maxSize) {
+    if (file.size > config.maxSize) {
       const duration = Date.now() - startTime;
       logError('File size exceeds limit', null, {
         fileSize: file.size,
-        maxSize: DOCUMENT_CONFIGS.maxSize,
+        maxSize: config.maxSize,
         fileName: file.name,
+        documentType,
         userId: session.user.id
       });
       logApiResponse(method, url, 400, duration, session.user.id);
       return NextResponse.json({
-        error: `File size exceeds limit of ${DOCUMENT_CONFIGS.maxSize / (1024 * 1024)}MB`
+        error: `File size exceeds limit of ${config.maxSize / (1024 * 1024)}MB`
       }, { status: 400 });
     }
 
     // Validate file type
-    if (!DOCUMENT_CONFIGS.allowedTypes.includes(file.type)) {
+    if (!config.allowedTypes.includes(file.type)) {
       const duration = Date.now() - startTime;
       logError('Invalid file type', null, {
         fileName: file.name,
         fileType: file.type,
-        allowedTypes: DOCUMENT_CONFIGS.allowedTypes,
+        allowedTypes: config.allowedTypes,
+        documentType,
         userId: session.user.id
       });
       logApiResponse(method, url, 400, duration, session.user.id);
       return NextResponse.json({
-        error: `Invalid file type. Allowed types: ${DOCUMENT_CONFIGS.allowedTypes.join(', ')}`
+        error: `Invalid file type. Allowed types: ${config.allowedTypes.join(', ')}`
       }, { status: 400 });
     }
 
@@ -118,18 +139,29 @@ export async function POST(request: NextRequest) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Upload to MinIO
-    const uploadResult = await uploadToMinio({
-      fileName: file.name,
-      fileBuffer: buffer,
-      contentType: file.type,
-      metadata: {
-        documentType,
-        applicationId: applicationId || '',
-        uploadedBy: session.user.id,
-        originalName: file.name
-      }
-    });
+    // Upload to MinIO - use chat-specific upload for chat files
+    let uploadResult;
+    if (isChat) {
+      uploadResult = await uploadChatFile({
+        fileName: file.name,
+        fileBuffer: buffer,
+        contentType: file.type,
+        chatId: applicationId || '', // For chat files, applicationId can be chatId
+        userId: session.user.id
+      });
+    } else {
+      uploadResult = await uploadToMinio({
+        fileName: file.name,
+        fileBuffer: buffer,
+        contentType: file.type,
+        metadata: {
+          documentType,
+          applicationId: applicationId || '',
+          uploadedBy: session.user.id,
+          originalName: file.name
+        }
+      });
+    }
 
     logFileOperation('upload', file.name, true, file.size, {
       documentType,

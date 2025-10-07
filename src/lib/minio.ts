@@ -20,6 +20,14 @@ export interface UploadOptions {
   metadata?: Record<string, string>;
 }
 
+export interface ChatUploadOptions {
+  fileName: string;
+  fileBuffer: Buffer;
+  contentType: string;
+  chatId: string;
+  userId: string;
+}
+
 export interface UploadResult {
   fileName: string;
   fileUrl: string;
@@ -135,6 +143,55 @@ export async function fileExists(fileName: string): Promise<boolean> {
     return true;
   } catch (error) {
     return false;
+  }
+}
+
+/**
+ * Upload chat file to MinIO with organized structure
+ */
+export async function uploadChatFile(options: ChatUploadOptions): Promise<UploadResult> {
+  const { fileName, fileBuffer, contentType, chatId, userId } = options;
+
+  try {
+    // Ensure bucket exists
+    const bucketExists = await minioClient.bucketExists(bucketName);
+    if (!bucketExists) {
+      await minioClient.makeBucket(bucketName);
+      console.log(`Bucket ${bucketName} created successfully`);
+    }
+
+    // Organize files by chat and date for better structure
+    const date = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+    const timestamp = Date.now();
+    const fileExtension = fileName.split('.').pop();
+    const uniqueFileName = `chat/${chatId}/${date}/${timestamp}-${Math.random().toString(36).substring(2)}.${fileExtension}`;
+
+    // Upload file with chat-specific metadata
+    const uploadResult = await minioClient.putObject(
+      bucketName,
+      uniqueFileName,
+      fileBuffer,
+      fileBuffer.length,
+      {
+        'Content-Type': contentType,
+        'X-Amz-Meta-Chat-Id': chatId,
+        'X-Amz-Meta-Uploaded-By': userId,
+        'X-Amz-Meta-Upload-Type': 'chat_message',
+        'X-Amz-Meta-Original-Name': fileName,
+      }
+    );
+
+    // Construct public URL
+    const fileUrl = `${publicUrl}/${bucketName}/${uniqueFileName}`;
+
+    return {
+      fileName: uniqueFileName,
+      fileUrl,
+      etag: uploadResult.etag
+    };
+  } catch (error) {
+    console.error('MinIO chat file upload error:', error);
+    throw new Error(`Failed to upload chat file: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
 
