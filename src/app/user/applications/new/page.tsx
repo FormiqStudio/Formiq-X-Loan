@@ -16,7 +16,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { ArrowLeft, ArrowRight, Save, Send, Upload, FileText, AlertCircle, CheckCircle, CreditCard, Shield, Clock, User, GraduationCap, DollarSign, Users } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Save, Send, Upload, FileText, AlertCircle, CheckCircle, CreditCard, Shield, Clock, User, GraduationCap, DollarSign, Users, X, Eye } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatFullCurrency, formatLoanAmount } from '@/lib/utils/currency';
 
