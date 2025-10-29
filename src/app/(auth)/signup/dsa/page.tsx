@@ -1,33 +1,47 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { FormInput, BankSelect } from '@/components/forms';
-import { LoadingSpinner } from '@/components/common';
-import { toast } from 'sonner';
-import { Eye, EyeOff, AlertCircle } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { FormInput, BankSelect } from "@/components/forms";
+import { LoadingSpinner } from "@/components/common";
+import { toast } from "sonner";
+import { Eye, EyeOff, AlertCircle } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
-const dsaRegisterSchema = z.object({
-  firstName: z.string().min(1, 'First name is required').max(50, 'First name too long'),
-  lastName: z.string().min(1, 'Last name is required').max(50, 'Last name too long'),
-  email: z.string().email('Invalid email address'),
-  phone: z.string().regex(/^[6-9]\d{9}$/, 'Invalid phone number'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
-  confirmPassword: z.string(),
-  bankName: z.enum(['SBI', 'HDFC', 'ICICI', 'AXIS', 'KOTAK'], {
-    message: 'Please select a bank',
-  }),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ["confirmPassword"],
-});
+const dsaRegisterSchema = z
+  .object({
+    firstName: z
+      .string()
+      .min(1, "First name is required")
+      .max(50, "First name too long"),
+    lastName: z
+      .string()
+      .min(1, "Last name is required")
+      .max(50, "Last name too long"),
+    email: z.string().email("Invalid email address"),
+    phone: z.string().regex(/^[6-9]\d{9}$/, "Invalid phone number"),
+    password: z.string().min(8, "Password must be at least 8 characters"),
+    confirmPassword: z.string(),
+    bankName: z.enum(["SBI", "HDFC", "ICICI", "AXIS", "KOTAK"], {
+      message: "Please select a bank",
+    }),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
+  });
 
 type DSARegisterForm = z.infer<typeof dsaRegisterSchema>;
 
@@ -48,16 +62,16 @@ export default function DSARegisterPage() {
 
   const onSubmit = async (data: DSARegisterForm) => {
     setIsLoading(true);
-    
+
     try {
-      const response = await fetch('/api/auth/register', {
-        method: 'POST',
+      const response = await fetch("/api/auth/register", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           ...data,
-          role: 'dsa',
+          role: "dsa",
         }),
       });
 
@@ -65,12 +79,12 @@ export default function DSARegisterPage() {
 
       if (result.success) {
         toast.success(result.message);
-        router.push('/login');
+        router.push("/login");
       } else {
-        toast.error(result.error || 'Registration failed');
+        toast.error(result.error || "Registration failed");
       }
     } catch {
-      toast.error('An unexpected error occurred');
+      toast.error("An unexpected error occurred");
     } finally {
       setIsLoading(false);
     }
@@ -94,7 +108,8 @@ export default function DSARegisterPage() {
         <Alert>
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
-            DSA accounts require admin verification before activation. You will be notified once your account is approved.
+            DSA accounts require admin verification before activation. You will
+            be notified once your account is approved.
           </AlertDescription>
         </Alert>
 
@@ -113,14 +128,14 @@ export default function DSARegisterPage() {
                   placeholder="Enter first name"
                   error={errors.firstName?.message}
                   required
-                  {...register('firstName')}
+                  {...register("firstName")}
                 />
                 <FormInput
                   label="Last Name"
                   placeholder="Enter last name"
                   error={errors.lastName?.message}
                   required
-                  {...register('lastName')}
+                  {...register("lastName")}
                 />
               </div>
 
@@ -130,7 +145,7 @@ export default function DSARegisterPage() {
                 placeholder="Enter your email"
                 error={errors.email?.message}
                 required
-                {...register('email')}
+                {...register("email")}
               />
 
               <FormInput
@@ -140,7 +155,7 @@ export default function DSARegisterPage() {
                 error={errors.phone?.message}
                 helperText="Enter a valid 10-digit Indian mobile number"
                 required
-                {...register('phone')}
+                {...register("phone")}
               />
 
               <BankSelect
@@ -148,24 +163,28 @@ export default function DSARegisterPage() {
                 placeholder="Select your bank"
                 error={errors.bankName?.message}
                 required
-                onValueChange={(value) => setValue('bankName', value as 'SBI' | 'HDFC' | 'ICICI' | 'AXIS' | 'KOTAK')}
+                onValueChange={(value) =>
+                  setValue(
+                    "bankName",
+                    value as "SBI" | "HDFC" | "ICICI" | "AXIS" | "KOTAK"
+                  )
+                }
               />
 
-              <div className="relative">
+              <div className="relative w-full">
                 <FormInput
+                  className="w-full pr-10"
                   label="Password"
-                  type={showPassword ? 'text' : 'password'}
+                  type={showPassword ? "text" : "password"}
                   placeholder="Create a password"
                   error={errors.password?.message}
                   helperText="Must be at least 8 characters with uppercase, lowercase, number, and special character"
                   required
-                  {...register('password')}
+                  {...register("password")}
                 />
-                <Button
+                <button
                   type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-2 top-8 h-8 w-8 p-0"
+                  className="absolute right-3 top-[32px] text-slate-600 hover:text-slate-800"
                   onClick={() => setShowPassword(!showPassword)}
                 >
                   {showPassword ? (
@@ -173,23 +192,22 @@ export default function DSARegisterPage() {
                   ) : (
                     <Eye className="h-4 w-4" />
                   )}
-                </Button>
+                </button>
               </div>
 
-              <div className="relative">
+              <div className="relative w-full">
                 <FormInput
+                  className="w-full pr-10"
                   label="Confirm Password"
-                  type={showConfirmPassword ? 'text' : 'password'}
+                  type={showConfirmPassword ? "text" : "password"}
                   placeholder="Confirm your password"
                   error={errors.confirmPassword?.message}
                   required
-                  {...register('confirmPassword')}
+                  {...register("confirmPassword")}
                 />
-                <Button
+                <button
                   type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-2 top-8 h-8 w-8 p-0"
+                  className="absolute right-3 top-[32px] text-slate-600 hover:text-slate-800"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                 >
                   {showConfirmPassword ? (
@@ -197,26 +215,21 @@ export default function DSARegisterPage() {
                   ) : (
                     <Eye className="h-4 w-4" />
                   )}
-                </Button>
+                </button>
               </div>
 
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <LoadingSpinner size="sm" />
-                ) : (
-                  'Register as DSA'
-                )}
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? <LoadingSpinner size="sm" /> : "Register as DSA"}
               </Button>
             </form>
 
             <div className="mt-6 text-center">
               <p className="text-sm text-gray-600">
-                Already have an account?{' '}
-                <Link href="/login" className="text-primary hover:text-primary/80">
+                Already have an account?{" "}
+                <Link
+                  href="/login"
+                  className="text-primary hover:text-primary/80"
+                >
                   Sign in
                 </Link>
               </p>

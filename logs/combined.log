@@ -421,3 +421,5 @@
 {"level":"error","message":"API Response: GET http://localhost:3000/api/messages/unread-count - 401 (9ms)","meta":{"duration":9,"method":"GET","status":401,"timestamp":"2025-10-17T20:08:57.211Z","url":"http://localhost:3000/api/messages/unread-count"},"timestamp":"2025-10-18 01:38:57:3857"}
 {"level":"info","message":"API Request: GET http://localhost:3000/api/notifications/count","method":"GET","timestamp":"2025-10-18 01:38:57:3857","url":"http://localhost:3000/api/notifications/count"}
 {"level":"error","message":"API Response: GET http://localhost:3000/api/notifications/count - 401 (11ms)","meta":{"duration":11,"method":"GET","status":401,"timestamp":"2025-10-17T20:08:57.227Z","url":"http://localhost:3000/api/notifications/count"},"timestamp":"2025-10-18 01:38:57:3857"}
+{"level":"info","message":"DSA account reactivated: dsa@sbi.com by admin: admin@loanmanagement.com","timestamp":"2025-10-27 21:46:03:463"}
+{"filters":{},"level":"info","limit":20,"message":"Admin payments retrieved","page":1,"timestamp":"2025-10-27 21:47:32:4732","totalCount":0,"userId":"68c1f375fd7b44bf3b192bfa"}
