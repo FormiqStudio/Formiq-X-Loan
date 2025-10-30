@@ -1,22 +1,28 @@
-'use client';
+"use client";
 
-import { useState, Suspense } from 'react';
-import { signIn, getSession } from 'next-auth/react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import Link from 'next/link';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { z } from 'zod';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { FormInput } from '@/components/forms';
-import { LoadingSpinner } from '@/components/common';
-import { toast } from 'sonner';
-import { Eye, EyeOff } from 'lucide-react';
+import { useState, Suspense } from "react";
+import { signIn, getSession } from "next-auth/react";
+import { useRouter, useSearchParams } from "next/navigation";
+import Link from "next/link";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { FormInput } from "@/components/forms";
+import { LoadingSpinner } from "@/components/common";
+import { toast } from "sonner";
+import { Eye, EyeOff } from "lucide-react";
 
 const loginSchema = z.object({
-  email: z.string().email('Invalid email address'),
-  password: z.string().min(1, 'Password is required'),
+  email: z.string().email("Invalid email address"),
+  password: z.string().min(1, "Password is required"),
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
@@ -26,7 +32,7 @@ function LoginFormComponent() {
   const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams?.get('callbackUrl') || '/';
+  const callbackUrl = searchParams?.get("callbackUrl") || "/";
 
   const {
     register,
@@ -38,9 +44,9 @@ function LoginFormComponent() {
 
   const onSubmit = async (data: LoginFormData) => {
     setIsLoading(true);
-    
+
     try {
-      const result = await signIn('credentials', {
+      const result = await signIn("credentials", {
         email: data.email,
         password: data.password,
         redirect: false,
@@ -52,13 +58,14 @@ function LoginFormComponent() {
         // Get the session to determine redirect URL
         const session = await getSession();
         if (session?.user) {
-          const redirectUrl = callbackUrl !== '/' ? callbackUrl : `/${session.user.role}`;
+          const redirectUrl =
+            callbackUrl !== "/" ? callbackUrl : `/${session.user.role}`;
           router.push(redirectUrl);
-          toast.success('Login successful!');
+          toast.success("Login successful!");
         }
       }
     } catch {
-      toast.error('An unexpected error occurred');
+      toast.error("An unexpected error occurred");
     } finally {
       setIsLoading(false);
     }
@@ -94,31 +101,31 @@ function LoginFormComponent() {
                 placeholder="Enter your email"
                 error={errors.email?.message}
                 required
-                {...register('email')}
+                {...register("email")}
               />
 
-              <div className="relative">
+              <div className="relative w-full">
                 <FormInput
+                  className="w-full pr-10"
                   label="Password"
-                  type={showPassword ? 'text' : 'password'}
+                  type={showPassword ? "text" : "password"}
                   placeholder="Enter your password"
                   error={errors.password?.message}
                   required
-                  {...register('password')}
+                  {...register("password")}
                 />
-                <Button
+
+                <button
                   type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-2 top-8 h-8 w-8 p-0"
                   onClick={() => setShowPassword(!showPassword)}
+                  className="absolute right-3 top-[32px] text-slate-600 hover:text-slate-800"
                 >
                   {showPassword ? (
                     <EyeOff className="h-4 w-4" />
                   ) : (
                     <Eye className="h-4 w-4" />
                   )}
-                </Button>
+                </button>
               </div>
 
               <div className="flex items-center justify-between">
@@ -130,16 +137,8 @@ function LoginFormComponent() {
                 </Link>
               </div>
 
-              <Button
-                type="submit"
-                className="w-full"
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <LoadingSpinner size="sm" />
-                ) : (
-                  'Sign In'
-                )}
+              <Button type="submit" className="w-full" disabled={isLoading}>
+                {isLoading ? <LoadingSpinner size="sm" /> : "Sign In"}
               </Button>
             </form>
 

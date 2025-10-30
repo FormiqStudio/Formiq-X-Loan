@@ -421,4 +421,12 @@
 {"level":"error","message":"API Response: GET http://localhost:3000/api/messages/unread-count - 401 (9ms)","meta":{"duration":9,"method":"GET","status":401,"timestamp":"2025-10-17T20:08:57.211Z","url":"http://localhost:3000/api/messages/unread-count"},"timestamp":"2025-10-18 01:38:57:3857"}
 {"level":"info","message":"API Request: GET http://localhost:3000/api/notifications/count","method":"GET","timestamp":"2025-10-18 01:38:57:3857","url":"http://localhost:3000/api/notifications/count"}
 {"level":"error","message":"API Response: GET http://localhost:3000/api/notifications/count - 401 (11ms)","meta":{"duration":11,"method":"GET","status":401,"timestamp":"2025-10-17T20:08:57.227Z","url":"http://localhost:3000/api/notifications/count"},"timestamp":"2025-10-18 01:38:57:3857"}
-{"level":"info","message":"DSA account reactivated: nayan@gmail.com by admin: admin1@gmail.com","timestamp":"2025-10-30 01:08:23:823"}
+{"level":"info","message":"DSA account reactivated: dsa@sbi.com by admin: admin@loanmanagement.com","timestamp":"2025-10-27 21:46:03:463"}
+{"filters":{},"level":"info","limit":20,"message":"Admin payments retrieved","page":1,"timestamp":"2025-10-27 21:47:32:4732","totalCount":0,"userId":"68c1f375fd7b44bf3b192bfa"}
+{"filters":{},"level":"info","limit":20,"message":"Admin payments retrieved","page":1,"timestamp":"2025-10-29 23:54:54:5454","totalCount":0,"userId":"68c1f375fd7b44bf3b192bfa"}
+{"level":"info","message":"API Request: GET http://localhost:3000/api/admin/analytics?timeRange=30d","method":"GET","timestamp":"2025-10-29 23:55:02:552","url":"http://localhost:3000/api/admin/analytics?timeRange=30d"}
+{"collection":"analytics","level":"info","message":"DB read on analytics: SUCCESS","operation":"read","success":true,"timeRange":"30d","timestamp":"2025-10-29 23:55:02:552","totalApplications":0,"totalUsers":3}
+{"duration":107,"level":"info","message":"API Response: GET http://localhost:3000/api/admin/analytics?timeRange=30d - 200 (107ms)","method":"GET","status":200,"timestamp":"2025-10-29 23:55:02:552","url":"http://localhost:3000/api/admin/analytics?timeRange=30d","userId":"68c1f375fd7b44bf3b192bfa"}
+{"level":"info","message":"API Request: GET http://localhost:3000/api/admin/settings","method":"GET","timestamp":"2025-10-29 23:55:13:5513","url":"http://localhost:3000/api/admin/settings"}
+{"collection":"settings","level":"info","message":"DB read on settings: SUCCESS","operation":"read","success":true,"timestamp":"2025-10-29 23:55:13:5513"}
+{"duration":12,"level":"info","message":"API Response: GET http://localhost:3000/api/admin/settings - 200 (12ms)","method":"GET","status":200,"timestamp":"2025-10-29 23:55:13:5513","url":"http://localhost:3000/api/admin/settings","userId":"68c1f375fd7b44bf3b192bfa"}
