@@ -509,6 +509,7 @@ export const apiSlice = createApi({
       role?: string;
       limit?: number;
       page?: number;
+      status?: string;
     }>({
       query: (params) => {
         const searchParams = new URLSearchParams();
@@ -713,6 +714,19 @@ export const apiSlice = createApi({
         body: profileData,
       }),
       invalidatesTags: ['Users'],
+    }),
+
+    //Dsa verification
+    verifyDsaAccount: builder.mutation<
+      { success: boolean; message: string; data: any },
+      { id: string; isVerified: boolean }
+    >({
+      query: ({ id, isVerified }) => ({
+        url: `admin/users/${id}/verify`,
+        method: "PUT",
+        body: { isVerified },
+      }),
+      invalidatesTags: ["Users"], 
     }),
 
     // Application documents endpoint
@@ -1087,6 +1101,7 @@ export const {
   useInitiatePaymentMutation,
   useGetPaymentStatusQuery,
   useGetAdminPaymentsQuery,
+  useVerifyDsaAccountMutation,
   useExportPaymentsMutation,
   useVerifyPaymentMutation,
   useUploadFileMutation,
