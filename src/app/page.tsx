@@ -23,6 +23,8 @@ import {
   TrendingUp,
   Award,
 } from "lucide-react";
+import Header from "@/components/common/header";
+import Footer from "@/components/common/footer";
 
 export default async function Home() {
   const session = await getAuthSession();
@@ -133,28 +135,7 @@ export default async function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-slate-50">
       {/* Header */}
-      <header className="bg-white/80 backdrop-blur-sm border-b border-slate-200 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-16">
-            <div className="flex items-center space-x-2">
-              <GraduationCap className="h-8 w-8 text-blue-600" />
-              <span className="text-xl font-bold text-slate-900">
-                EduLoan Pro
-              </span>
-            </div>
-            <div className="flex items-center space-x-4">
-              <Link href="/login">
-                <Button variant="ghost">Login</Button>
-              </Link>
-              <Link href="/register">
-                <Button className="bg-blue-600 hover:bg-blue-700">
-                  Get Started
-                </Button>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       {/* Hero Section */}
       <section className="relative py-20 lg:py-32">
@@ -388,51 +369,7 @@ export default async function Home() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-slate-900 text-white py-12">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            <div>
-              <div className="flex items-center space-x-2 mb-4">
-                <GraduationCap className="h-6 w-6 text-blue-400" />
-                <span className="text-lg font-bold">EduLoan Pro</span>
-              </div>
-              <p className="text-slate-400">
-                Making education accessible through smart financing solutions.
-              </p>
-            </div>
-            <div>
-              <h3 className="font-semibold mb-4">Loan Types</h3>
-              <ul className="space-y-2 text-slate-400">
-                <li>Undergraduate Loans</li>
-                <li>Postgraduate Loans</li>
-                <li>Study Abroad</li>
-                <li>Professional Courses</li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-semibold mb-4">Support</h3>
-              <ul className="space-y-2 text-slate-400">
-                <li>Help Center</li>
-                <li>Contact Us</li>
-                <li>EMI Calculator</li>
-                <li>Documentation</li>
-              </ul>
-            </div>
-            <div>
-              <h3 className="font-semibold mb-4">Company</h3>
-              <ul className="space-y-2 text-slate-400">
-                <li>About Us</li>
-                <li>Careers</li>
-                <li>Privacy Policy</li>
-                <li>Terms of Service</li>
-              </ul>
-            </div>
-          </div>
-          <div className="border-t border-slate-800 mt-8 pt-8 text-center text-slate-400">
-            <p>&copy; 2024 EduLoan Pro. All rights reserved.</p>
-          </div>
-        </div>
-      </footer>
+      <Footer/>
     </div>
   );
 }
