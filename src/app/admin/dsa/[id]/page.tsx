@@ -1,16 +1,32 @@
-'use client';
+"use client";
 
-import { use } from 'react';
-import { useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
-import { DashboardLayout } from '@/components/layout';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { ArrowLeft, Edit, Mail, Phone, MapPin, Building, Calendar, Star, TrendingUp, Users, FileText } from 'lucide-react';
-import { useGetUserByIdQuery, useGetApplicationsQuery } from '@/store/api/apiSlice';
-import { SkeletonCard } from '@/components/ui/loading/SkeletonCard';
-import { safeString, safeDate, safeNumber } from '@/lib/utils/fallbacks';
+import { use } from "react";
+import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+import { DashboardLayout } from "@/components/layout";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import {
+  ArrowLeft,
+  Edit,
+  Mail,
+  Phone,
+  MapPin,
+  Building,
+  Calendar,
+  Star,
+  TrendingUp,
+  Users,
+  FileText,
+} from "lucide-react";
+import {
+  useGetUserByIdQuery,
+  useGetApplicationsQuery,
+} from "@/store/api/apiSlice";
+import { SkeletonCard } from "@/components/ui/loading/SkeletonCard";
+import { safeString, safeDate, safeNumber } from "@/lib/utils/fallbacks";
+import DSADocuments from "../components/DSADocuments";
 
 interface DSADetailPageProps {
   params: Promise<{ id: string }>;
@@ -25,22 +41,23 @@ export default function DSADetailPage({ params }: DSADetailPageProps) {
   const {
     data: dsaData,
     isLoading: dsaLoading,
-    error: dsaError
+    error: dsaError,
   } = useGetUserByIdQuery(id, {
-    skip: !session?.user || session.user.role !== 'admin'
+    skip: !session?.user || session.user.role !== "admin",
   });
+  console.log("dsaData", dsaData);
+  const { data: applicationsData, isLoading: applicationsLoading } =
+    useGetApplicationsQuery(
+      {
+        limit: 10,
+        page: 1,
+      },
+      {
+        skip: !session?.user || session.user.role !== "admin",
+      }
+    );
 
-  const {
-    data: applicationsData,
-    isLoading: applicationsLoading
-  } = useGetApplicationsQuery({
-    limit: 10,
-    page: 1
-  }, {
-    skip: !session?.user || session.user.role !== 'admin'
-  });
-
-  if (status === 'loading' || dsaLoading) {
+  if (status === "loading" || dsaLoading) {
     return (
       <DashboardLayout>
         <div className="space-y-6 lg:space-y-8">
@@ -52,8 +69,8 @@ export default function DSADetailPage({ params }: DSADetailPageProps) {
     );
   }
 
-  if (!session?.user || session.user.role !== 'admin') {
-    router.push('/auth/signin');
+  if (!session?.user || session.user.role !== "admin") {
+    router.push("/auth/signin");
     return null;
   }
 
@@ -62,8 +79,12 @@ export default function DSADetailPage({ params }: DSADetailPageProps) {
       <DashboardLayout>
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
-            <h2 className="text-xl font-semibold text-slate-900 mb-2">DSA Not Found</h2>
-            <p className="text-slate-600 mb-4">The requested DSA could not be found.</p>
+            <h2 className="text-xl font-semibold text-slate-900 mb-2">
+              DSA Not Found
+            </h2>
+            <p className="text-slate-600 mb-4">
+              The requested DSA could not be found.
+            </p>
             <Button onClick={() => router.back()}>
               <ArrowLeft className="h-4 w-4 mr-2" />
               Go Back
@@ -78,9 +99,21 @@ export default function DSADetailPage({ params }: DSADetailPageProps) {
   const applications = applicationsData?.applications || [];
 
   const getStatusColor = (isActive: boolean) => {
-    return isActive ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800';
+    return isActive ? "bg-green-100 text-green-800" : "bg-red-100 text-red-800";
   };
+const normalizeUrl = (u?: string) => {
+  if (!u) return '';
+  if (u.startsWith('http://') || u.startsWith('https://')) return u;
+  return `https://${u}`; // adjust if your minio host uses http
+};
 
+// map documents coming from user/fileuploads to the Doc shape expected by DSADocuments
+const mappedDocs = (dsa.documents || []).map((doc: any) => ({
+  _id: doc._id,
+  fileName: doc.fileName || doc.originalName || 'document.pdf',
+  filePath: normalizeUrl(doc.filePath || doc.fileUrl || doc.minioObjectName || ''),
+  type: doc.type || doc.documentType || 'Document',
+}));
   return (
     <DashboardLayout>
       <div className="space-y-6 lg:space-y-8">
@@ -121,7 +154,7 @@ export default function DSADetailPage({ params }: DSADetailPageProps) {
                 <CardTitle className="flex items-center justify-between">
                   Basic Information
                   <Badge className={getStatusColor(dsa.isActive)}>
-                    {dsa.isActive ? 'Active' : 'Inactive'}
+                    {dsa.isActive ? "Active" : "Inactive"}
                   </Badge>
                 </CardTitle>
               </CardHeader>
@@ -130,47 +163,68 @@ export default function DSADetailPage({ params }: DSADetailPageProps) {
                   <div className="flex items-center gap-3">
                     <Mail className="h-5 w-5 text-slate-400" />
                     <div>
-                      <p className="text-sm font-medium text-slate-600">Email</p>
+                      <p className="text-sm font-medium text-slate-600">
+                        Email
+                      </p>
                       <p className="text-slate-900">{safeString(dsa.email)}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
                     <Phone className="h-5 w-5 text-slate-400" />
                     <div>
-                      <p className="text-sm font-medium text-slate-600">Phone</p>
-                      <p className="text-slate-900">{safeString(dsa.phone, 'Not provided')}</p>
+                      <p className="text-sm font-medium text-slate-600">
+                        Phone
+                      </p>
+                      <p className="text-slate-900">
+                        {safeString(dsa.phone, "Not provided")}
+                      </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
                     <Building className="h-5 w-5 text-slate-400" />
                     <div>
                       <p className="text-sm font-medium text-slate-600">Bank</p>
-                      <p className="text-slate-900">{safeString(dsa.bankName, 'Not specified')}</p>
+                      <p className="text-slate-900">
+                        {safeString(dsa.bankName, "Not specified")}
+                      </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
                     <MapPin className="h-5 w-5 text-slate-400" />
                     <div>
-                      <p className="text-sm font-medium text-slate-600">Branch Code</p>
-                      <p className="text-slate-900">{safeString(dsa.branchCode, 'Not specified')}</p>
+                      <p className="text-sm font-medium text-slate-600">
+                        Branch Code
+                      </p>
+                      <p className="text-slate-900">
+                        {safeString(dsa.branchCode, "Not specified")}
+                      </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
                     <Calendar className="h-5 w-5 text-slate-400" />
                     <div>
-                      <p className="text-sm font-medium text-slate-600">Joined</p>
-                      <p className="text-slate-900">{safeDate(dsa.createdAt)}</p>
+                      <p className="text-sm font-medium text-slate-600">
+                        Joined
+                      </p>
+                      <p className="text-slate-900">
+                        {safeDate(dsa.createdAt)}
+                      </p>
                     </div>
                   </div>
                   <div className="flex items-center gap-3">
                     <Star className="h-5 w-5 text-slate-400" />
                     <div>
-                      <p className="text-sm font-medium text-slate-600">Rating</p>
-                      <p className="text-slate-900">{safeNumber(dsa.rating, 0).toFixed(1)} / 5.0</p>
+                      <p className="text-sm font-medium text-slate-600">
+                        Rating
+                      </p>
+                      <p className="text-slate-900">
+                        {safeNumber(dsa.rating, 0).toFixed(1)} / 5.0
+                      </p>
                     </div>
                   </div>
                 </div>
               </CardContent>
+              <DSADocuments documents={mappedDocs} />
             </Card>
 
             {/* Recent Applications */}
@@ -181,7 +235,7 @@ export default function DSADetailPage({ params }: DSADetailPageProps) {
               <CardContent>
                 {applicationsLoading ? (
                   <div className="space-y-3">
-                    {[1, 2, 3].map(i => (
+                    {[1, 2, 3].map((i) => (
                       <div key={i} className="animate-pulse">
                         <div className="h-4 bg-slate-200 rounded w-3/4 mb-2"></div>
                         <div className="h-3 bg-slate-200 rounded w-1/2"></div>
@@ -191,27 +245,37 @@ export default function DSADetailPage({ params }: DSADetailPageProps) {
                 ) : applications.length > 0 ? (
                   <div className="space-y-4">
                     {applications.slice(0, 5).map((app: any) => (
-                      <div key={app._id} className="flex items-center justify-between p-3 border border-slate-100 rounded-lg">
+                      <div
+                        key={app._id}
+                        className="flex items-center justify-between p-3 border border-slate-100 rounded-lg"
+                      >
                         <div>
                           <p className="font-medium text-slate-900">
                             Application #{safeString(app.applicationNumber)}
                           </p>
                           <p className="text-sm text-slate-600">
-                            {safeString(app.personalDetails?.fullName)} • {safeDate(app.createdAt)}
+                            {safeString(app.personalDetails?.fullName)} •{" "}
+                            {safeDate(app.createdAt)}
                           </p>
                         </div>
-                        <Badge className={`${
-                          app.status === 'approved' ? 'bg-green-100 text-green-800' :
-                          app.status === 'rejected' ? 'bg-red-100 text-red-800' :
-                          'bg-yellow-100 text-yellow-800'
-                        }`}>
-                          {safeString(app.status).replace('_', ' ')}
+                        <Badge
+                          className={`${
+                            app.status === "approved"
+                              ? "bg-green-100 text-green-800"
+                              : app.status === "rejected"
+                              ? "bg-red-100 text-red-800"
+                              : "bg-yellow-100 text-yellow-800"
+                          }`}
+                        >
+                          {safeString(app.status).replace("_", " ")}
                         </Badge>
                       </div>
                     ))}
                   </div>
                 ) : (
-                  <p className="text-slate-600 text-center py-8">No applications assigned yet</p>
+                  <p className="text-slate-600 text-center py-8">
+                    No applications assigned yet
+                  </p>
                 )}
               </CardContent>
             </Card>
@@ -228,7 +292,9 @@ export default function DSADetailPage({ params }: DSADetailPageProps) {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <FileText className="h-4 w-4 text-blue-600" />
-                    <span className="text-sm text-slate-600">Total Applications</span>
+                    <span className="text-sm text-slate-600">
+                      Total Applications
+                    </span>
                   </div>
                   <span className="font-semibold text-slate-900">
                     {safeNumber(dsa.statistics?.totalApplications, 0)}
@@ -255,10 +321,16 @@ export default function DSADetailPage({ params }: DSADetailPageProps) {
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <Users className="h-4 w-4 text-purple-600" />
-                    <span className="text-sm text-slate-600">Total Loan Amount</span>
+                    <span className="text-sm text-slate-600">
+                      Total Loan Amount
+                    </span>
                   </div>
                   <span className="font-semibold text-slate-900">
-                    ₹{((safeNumber(dsa.statistics?.totalLoanAmount, 0)) / 100000).toFixed(1)}L
+                    ₹
+                    {(
+                      safeNumber(dsa.statistics?.totalLoanAmount, 0) / 100000
+                    ).toFixed(1)}
+                    L
                   </span>
                 </div>
               </CardContent>
@@ -273,7 +345,9 @@ export default function DSADetailPage({ params }: DSADetailPageProps) {
                 <Button
                   variant="outline"
                   className="w-full justify-start"
-                  onClick={() => router.push(`/admin/applications?assignedDSA=${id}`)}
+                  onClick={() =>
+                    router.push(`/admin/applications?assignedDSA=${id}`)
+                  }
                 >
                   <FileText className="h-4 w-4 mr-2" />
                   View All Applications
@@ -289,7 +363,7 @@ export default function DSADetailPage({ params }: DSADetailPageProps) {
                 <Button
                   variant="outline"
                   className="w-full justify-start"
-                  onClick={() => window.open(`mailto:${dsa.email}`, '_blank')}
+                  onClick={() => window.open(`mailto:${dsa.email}`, "_blank")}
                 >
                   <Mail className="h-4 w-4 mr-2" />
                   Send Email

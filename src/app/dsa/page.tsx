@@ -1,7 +1,4 @@
 'use client';
-
-
-
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { DashboardLayout } from '@/components/layout';
@@ -64,7 +61,7 @@ export default function DSADashboard() {
               <h1 className="text-3xl font-bold text-white">Welcome back, {session?.user?.firstName || 'DSA'}!</h1>
               <div className="flex items-center space-x-4">
                 <div className="bg-primary/10 px-4 py-2 rounded-full">
-                  <p className="text-sm font-semibold text-primary text-white">
+                  <p className="text-sm font-semibold text-white">
                     DSA ID: {session?.user?.dsaId || 'N/A'}
                   </p>
                 </div>

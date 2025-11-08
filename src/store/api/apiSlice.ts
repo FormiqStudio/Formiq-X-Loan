@@ -150,6 +150,7 @@ export interface User {
   profilePicture?: string;
   rating?: number;
   lastLogin?: string;
+  documents?: Array<FileUpload>;
 
   // DSA-specific fields for deadline management
   deadlineCompliance?: number; // Percentage of deadlines met
