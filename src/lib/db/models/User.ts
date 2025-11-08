@@ -9,6 +9,8 @@ export interface IUser extends Document {
   phone: string;
   role: 'admin' | 'dsa' | 'user';
   bankName?: string;
+  panimage?: string;
+  aadharimage?: string;
   dsaId?: string;
   isActive: boolean;
   isVerified: boolean;

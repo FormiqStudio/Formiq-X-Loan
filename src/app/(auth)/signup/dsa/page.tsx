@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
@@ -51,6 +51,9 @@ export default function DSARegisterPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const router = useRouter();
 
+  const panRef = useRef<HTMLInputElement | null>(null);
+  const aadharRef = useRef<HTMLInputElement | null>(null);
+
   const {
     register,
     handleSubmit,
@@ -60,31 +63,78 @@ export default function DSARegisterPage() {
     resolver: zodResolver(dsaRegisterSchema),
   });
 
-  const onSubmit = async (data: DSARegisterForm) => {
+  const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
+  const ALLOWED_TYPE = "application/pdf";
+
+  const onSubmit = async (data: DSARegisterForm & Record<string, any>) => {
     setIsLoading(true);
 
     try {
-      const response = await fetch("/api/auth/register", {
+      const panFile = panRef.current?.files?.[0];
+      const aadharFile = aadharRef.current?.files?.[0];
+
+      if (!panFile) {
+        toast.error("Please upload PAN PDF");
+        setIsLoading(false);
+        return;
+      }
+      if (!aadharFile) {
+        toast.error("Please upload Aadhar PDF");
+        setIsLoading(false);
+        return;
+      }
+
+      // Client-side validation
+      if (panFile.type !== ALLOWED_TYPE || aadharFile.type !== ALLOWED_TYPE) {
+        toast.error("Only PDF files are allowed for PAN and Aadhar");
+        setIsLoading(false);
+        return;
+      }
+      if (panFile.size > MAX_FILE_SIZE || aadharFile.size > MAX_FILE_SIZE) {
+        toast.error("Each file must be less than 10 MB");
+        setIsLoading(false);
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("firstName", data.firstName);
+      formData.append("lastName", data.lastName);
+      formData.append("email", data.email);
+      formData.append("phone", data.phone);
+      formData.append("password", data.password);
+      formData.append("confirmPassword", data.confirmPassword);
+      formData.append("role", "dsa");
+      if (data.bankName) formData.append("bankName", data.bankName);
+      formData.append("pan", panFile);
+      formData.append("aadhar", aadharFile);
+
+      const res = await fetch("/api/auth/register", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          ...data,
-          role: "dsa",
-        }),
+        body: formData, // do NOT set Content-Type header; browser handles multipart boundary
       });
 
-      const result = await response.json();
+      const json = await res.json();
 
-      if (result.success) {
-        toast.success(result.message);
+      if (res.ok && json.success) {
+        toast.success(json.message || "Registration successful");
         router.push("/login");
       } else {
-        toast.error(result.error || "Registration failed");
+        // Prefer server details if provided
+        if (
+          json?.details &&
+          Array.isArray(json.details) &&
+          json.details.length
+        ) {
+          toast.error(
+            json.details[0].message || json.error || "Registration failed"
+          );
+        } else {
+          toast.error(json.error || "Registration failed");
+        }
       }
-    } catch {
-      toast.error("An unexpected error occurred");
+    } catch (err: any) {
+      console.error("Registration error", err);
+      toast.error(err?.message || "Unexpected error occurred");
     } finally {
       setIsLoading(false);
     }
@@ -121,7 +171,11 @@ export default function DSARegisterPage() {
             </CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+            <form
+              onSubmit={handleSubmit(onSubmit)}
+              className="space-y-4"
+              encType="multipart/form-data"
+            >
               <div className="grid grid-cols-2 gap-4">
                 <FormInput
                   label="First Name"
@@ -171,7 +225,33 @@ export default function DSARegisterPage() {
                 }
               />
 
-              <div className="relative w-full">
+              {/* PAN file */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  PAN (PDF)
+                </label>
+                <input
+                  ref={panRef}
+                  type="file"
+                  accept="application/pdf"
+                  className="mt-1 block w-full"
+                />
+              </div>
+
+              {/* Aadhar file */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700">
+                  Aadhar (PDF)
+                </label>
+                <input
+                  ref={aadharRef}
+                  type="file"
+                  accept="application/pdf"
+                  className="mt-1 block w-full"
+                />
+              </div>
+
+              <div className="relative">
                 <FormInput
                   className="w-full pr-10"
                   label="Password"
