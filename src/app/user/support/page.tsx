@@ -193,7 +193,20 @@ export default function UserSupportPage() {
       }).unwrap();
 
       setNewMessage('');
-      refetchTickets();
+      
+      // Refetch tickets and update selectedTicket with fresh data
+      const { data: updatedTicketsData } = await refetchTickets();
+      
+      // Find and update the selected ticket with the new data
+      if (updatedTicketsData?.tickets) {
+        const updatedTicket = updatedTicketsData.tickets.find(
+          (t: any) => t._id === selectedTicket._id
+        );
+        if (updatedTicket) {
+          setSelectedTicket(updatedTicket);
+        }
+      }
+      
       toast.success('Message sent successfully');
     } catch (error) {
       toast.error('Failed to send message');

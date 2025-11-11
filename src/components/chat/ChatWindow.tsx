@@ -14,11 +14,11 @@ import {
   useSendMessageMutation,
   useMarkMessagesAsReadMutation
 } from '@/store/api/apiSlice';
-import { Send, Paperclip, Image, File, Download, Eye, X, MessageCircle, CheckCheck } from 'lucide-react';
+import { Send, Paperclip, File, Download, Eye, X, MessageCircle, CheckCheck, Images } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import { useSocket } from '@/hooks/useSocket';
-
+import Image from 'next/image';
 interface ChatWindowProps {
   chatId: string;
   applicationId: string;
@@ -30,11 +30,11 @@ interface ChatWindowProps {
   onClose?: () => void;
 }
 
-export default function ChatWindow({ 
-  chatId, 
-  applicationId, 
-  participants, 
-  onClose 
+export default function ChatWindow({
+  chatId,
+  applicationId,
+  participants,
+  onClose
 }: ChatWindowProps) {
   const { data: session } = useSession();
   const [message, setMessage] = useState('');
@@ -297,7 +297,7 @@ export default function ChatWindow({
 
   const renderMessage = useCallback((msg: any) => {
     const isOwnMessage = msg.senderId === session?.user?.id;
-
+    console.log(msg)
     return (
       <div
         className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'} mb-3`}
@@ -308,7 +308,7 @@ export default function ChatWindow({
               {getInitials(msg.senderName)}
             </AvatarFallback>
           </Avatar>
-          
+
           <div className={`${isOwnMessage ? 'mr-2' : 'ml-2'}`}>
             <div className="flex items-center space-x-2 mb-0.5">
               <span className="text-sm font-medium">{msg.senderName}</span>
@@ -326,61 +326,64 @@ export default function ChatWindow({
                 </div>
               )}
             </div>
-            
-            <div className={`rounded-2xl p-3 shadow-sm max-w-sm ${
-              isOwnMessage
-                ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white'
-                : 'bg-white text-gray-900 border border-gray-200'
-            }`}>
+
+            <div className={`rounded-2xl p-3 shadow-sm max-w-sm ${isOwnMessage
+              ? 'bg-gradient-to-br from-blue-500 to-blue-600 text-white'
+              : 'bg-white text-gray-900 border border-gray-200'
+              }`}>
               {msg.messageType === 'text' && (
                 <p className="text-sm whitespace-pre-wrap leading-relaxed">{msg.message}</p>
               )}
-              
+
               {msg.messageType === 'image' && (
                 <div className="space-y-3">
-                  <div className="relative group">
-                    <img
-                      src={msg.fileUrl}
-                      alt={msg.fileName}
-                      className="max-w-full h-auto rounded-xl cursor-pointer transition-transform hover:scale-105 shadow-lg"
-                      onClick={() => window.open(msg.fileUrl, '_blank')}
+                  <div
+                    className="relative group cursor-pointer"
+                    onClick={() => {
+                      const url = msg.fileUrl.startsWith('http')
+                        ? msg.fileUrl
+                        : 'https://' + msg.fileUrl
+                      window.open(url, '_blank')
+                    }}                  >
+                    <Image
+                      src={`http://${msg.fileUrl}`}
+                      height={40}
+                      width={40}
+                      alt="image"
+                      className="max-w-full h-auto rounded-xl transition-transform hover:scale-105 shadow-lg"
                     />
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-200 rounded-xl flex items-center justify-center">
                       <Eye className="h-6 w-6 text-white opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
                     </div>
                   </div>
+
                   {msg.message && <p className="text-sm leading-relaxed">{msg.message}</p>}
                 </div>
               )}
-              
+
               {msg.messageType === 'file' && (
                 <div className="space-y-3">
-                  <div className={`flex items-center space-x-3 p-3 rounded-xl border-2 border-dashed transition-colors ${
-                    isOwnMessage
-                      ? 'bg-white/10 border-white/30'
-                      : 'bg-blue-50 border-blue-200 hover:bg-blue-100'
-                  }`}>
-                    <div className={`p-2 rounded-lg ${
-                      isOwnMessage ? 'bg-white/20' : 'bg-blue-100'
+                  <div className={`flex items-center space-x-3 p-3 rounded-xl border-2 border-dashed transition-colors ${isOwnMessage
+                    ? 'bg-white/10 border-white/30'
+                    : 'bg-blue-50 border-blue-200 hover:bg-blue-100'
                     }`}>
-                      <File className={`h-4 w-4 ${
-                        isOwnMessage ? 'text-white' : 'text-blue-600'
-                      }`} />
+                    <div className={`p-2 rounded-lg ${isOwnMessage ? 'bg-white/20' : 'bg-blue-100'
+                      }`}>
+                      <File className={`h-4 w-4 ${isOwnMessage ? 'text-white' : 'text-blue-600'
+                        }`} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className={`text-sm font-medium truncate ${
-                        isOwnMessage ? 'text-white' : 'text-gray-900'
-                      }`}>{msg.fileName}</p>
+                      <p className={`text-sm font-medium truncate ${isOwnMessage ? 'text-white' : 'text-gray-900'
+                        }`}>{msg.fileName}</p>
                     </div>
                     <div className="flex space-x-1">
                       <Button
                         size="sm"
                         variant="ghost"
-                        className={`h-8 w-8 p-0 transition-colors ${
-                          isOwnMessage
-                            ? 'hover:bg-white/20 text-white'
-                            : 'hover:bg-blue-200 text-blue-600'
-                        }`}
+                        className={`h-8 w-8 p-0 transition-colors ${isOwnMessage
+                          ? 'hover:bg-white/20 text-white'
+                          : 'hover:bg-blue-200 text-blue-600'
+                          }`}
                         onClick={() => window.open(msg.fileUrl, '_blank')}
                       >
                         <Eye className="h-4 w-4" />
@@ -388,11 +391,10 @@ export default function ChatWindow({
                       <Button
                         size="sm"
                         variant="ghost"
-                        className={`h-8 w-8 p-0 transition-colors ${
-                          isOwnMessage
-                            ? 'hover:bg-white/20 text-white'
-                            : 'hover:bg-blue-200 text-blue-600'
-                        }`}
+                        className={`h-8 w-8 p-0 transition-colors ${isOwnMessage
+                          ? 'hover:bg-white/20 text-white'
+                          : 'hover:bg-blue-200 text-blue-600'
+                          }`}
                         onClick={() => {
                           const link = document.createElement('a');
                           link.href = msg.fileUrl;
@@ -439,10 +441,9 @@ export default function ChatWindow({
                   })()}
                 </CardTitle>
                 <div className="flex items-center space-x-2 mt-1">
-                  <div className={`w-2 h-2 rounded-full ${
-                    !isOnline ? 'bg-gray-400' :
+                  <div className={`w-2 h-2 rounded-full ${!isOnline ? 'bg-gray-400' :
                     isConnected ? 'bg-green-400 animate-pulse' : 'bg-yellow-400 animate-pulse'
-                  }`}></div>
+                    }`}></div>
                   <span className="text-xs opacity-90 font-medium">
                     {!isOnline ? 'Offline' : isConnected ? 'Connected' : 'Connecting...'}
                   </span>
@@ -468,9 +469,9 @@ export default function ChatWindow({
           ))}
         </div>
       </CardHeader>
-      
+
       <Separator />
-      
+
       <CardContent className="flex-1 flex flex-col p-0">
         {/* Messages Area */}
         <ScrollArea className="flex-1 p-3">
@@ -495,7 +496,7 @@ export default function ChatWindow({
                 No messages yet. Start the conversation!
                 {process.env.NODE_ENV === 'development' && (
                   <div className="text-xs mt-2 text-gray-400">
-                    Chat ID: {chatId}<br/>
+                    Chat ID: {chatId}<br />
                     Application ID: {applicationId}
                   </div>
                 )}
@@ -538,9 +539,9 @@ export default function ChatWindow({
             </div>
           )}
         </ScrollArea>
-        
+
         <Separator />
-        
+
         {/* File Preview */}
         {selectedFile && (
           <div className="p-3 bg-gradient-to-r from-blue-50 to-indigo-50 border-t border-blue-200 flex-shrink-0">
@@ -548,7 +549,7 @@ export default function ChatWindow({
               <div className="flex items-center space-x-3">
                 <div className="p-2 bg-blue-100 rounded-lg">
                   {selectedFile.type.startsWith('image/') ? (
-                    <Image className="h-4 w-4 text-blue-600" />
+                    <Images className="h-4 w-4 text-blue-600" />
                   ) : (
                     <File className="h-4 w-4 text-blue-600" />
                   )}
@@ -571,7 +572,7 @@ export default function ChatWindow({
             </div>
           </div>
         )}
-        
+
         {/* Message Input */}
         <div className="p-3 border-t bg-gray-50/50 flex-shrink-0" style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}>
           <div className="flex items-end space-x-2 sm:space-x-3">
@@ -585,8 +586,8 @@ export default function ChatWindow({
                 onKeyPress={handleKeyPress}
                 placeholder={
                   !isOnline ? "You are offline" :
-                  !isConnected ? "Connecting..." :
-                  "Type your message..."
+                    !isConnected ? "Connecting..." :
+                      "Type your message..."
                 }
                 disabled={isSending || isUploading || !isConnected || !isOnline}
                 className="resize-none border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-xl py-2 px-3 text-sm min-h-[40px] w-full"

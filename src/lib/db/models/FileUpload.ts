@@ -85,8 +85,7 @@ const FileUploadSchema = new Schema<IFileUpload>({
   },
   cloudinaryPublicId: {
     type: String,
-    required: true,
-    unique: true,
+
   },
   isDeleted: {
     type: Boolean,
@@ -116,53 +115,53 @@ FileUploadSchema.index({ applicationId: 1, documentType: 1 });
 // uploadedAt and isDeleted already have individual indexes
 
 // Virtual for file size in human readable format
-FileUploadSchema.virtual('fileSizeFormatted').get(function() {
+FileUploadSchema.virtual('fileSizeFormatted').get(function () {
   const bytes = this.fileSize;
   if (bytes === 0) return '0 Bytes';
-  
+
   const k = 1024;
   const sizes = ['Bytes', 'KB', 'MB', 'GB'];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
-  
+
   return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
 });
 
 // Method to soft delete file
-FileUploadSchema.methods.softDelete = function() {
+FileUploadSchema.methods.softDelete = function () {
   this.isDeleted = true;
   this.deletedAt = new Date();
   return this.save();
 };
 
 // Static method to find active files
-FileUploadSchema.statics.findActive = function(query = {}) {
+FileUploadSchema.statics.findActive = function (query = {}) {
   return this.find({ ...query, isDeleted: false });
 };
 
 // Static method to find files by application
-FileUploadSchema.statics.findByApplication = function(applicationId: string) {
+FileUploadSchema.statics.findByApplication = function (applicationId: string) {
   return this.find({ applicationId, isDeleted: false });
 };
 
 // Static method to find files by user
-FileUploadSchema.statics.findByUser = function(userId: string) {
+FileUploadSchema.statics.findByUser = function (userId: string) {
   return this.find({ uploadedBy: userId, isDeleted: false });
 };
 
 // Static method to find files by document type
-FileUploadSchema.statics.findByDocumentType = function(documentType: string) {
+FileUploadSchema.statics.findByDocumentType = function (documentType: string) {
   return this.find({ documentType, isDeleted: false });
 };
 
 // Instance method for soft delete
-FileUploadSchema.methods.softDelete = function() {
+FileUploadSchema.methods.softDelete = function () {
   this.isDeleted = true;
   this.deletedAt = new Date();
   return this.save();
 };
 
 // Pre-save middleware to update timestamps
-FileUploadSchema.pre('save', function(next) {
+FileUploadSchema.pre('save', function (next) {
   if (this.isModified('isDeleted') && this.isDeleted && !this.deletedAt) {
     this.deletedAt = new Date();
   }
@@ -172,7 +171,7 @@ FileUploadSchema.pre('save', function(next) {
 // Ensure virtual fields are serialized
 FileUploadSchema.set('toJSON', {
   virtuals: true,
-  transform: function(doc, ret) {
+  transform: function (doc, ret) {
     delete (ret as any).__v;
     return ret;
   }
