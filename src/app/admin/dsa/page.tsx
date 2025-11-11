@@ -592,9 +592,9 @@ export default function AdminDSAPage() {
                           >
                             {dsa.bankName || "N/A"}
                           </Badge>
-                          <div className="text-sm text-slate-500 mt-1">
+                          {/* <div className="text-sm text-slate-500 mt-1">
                             {dsa.branchCode || "N/A"}
-                          </div>
+                          </div> */}
                         </div>
                       </td>
                       <td className="p-4">

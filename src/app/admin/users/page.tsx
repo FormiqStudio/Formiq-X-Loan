@@ -102,10 +102,10 @@ export default function AdminUsersPage() {
             <h1 className="text-2xl font-bold text-slate-900">User Management</h1>
             <p className="text-slate-600">Manage regular users and administrators (DSAs managed separately)</p>
           </div>
-          <Button className="bg-blue-600 hover:bg-blue-700">
+          {/* <Button className="bg-blue-600 hover:bg-blue-700">
             <UserPlus className="h-4 w-4 mr-2" />
             Add User
-          </Button>
+          </Button> */}
         </div>
 
         {/* Filters */}

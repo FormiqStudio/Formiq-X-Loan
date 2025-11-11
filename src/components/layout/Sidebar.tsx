@@ -79,18 +79,18 @@ const navigationItems: NavItem[] = [
     icon: BarChart3,
     roles: ['admin'],
   },
-  {
-    name: 'Reports',
-    href: '/admin/reports',
-    icon: BarChart3,
-    roles: ['admin'],
-  },
-  {
-    name: 'Settings',
-    href: '/admin/settings',
-    icon: Settings,
-    roles: ['admin'],
-  },
+  // {
+  //   name: 'Reports',
+  //   href: '/admin/reports',
+  //   icon: BarChart3,
+  //   roles: ['admin'],
+  // },
+  // {
+  //   name: 'Settings',
+  //   href: '/admin/settings',
+  //   icon: Settings,
+  //   roles: ['admin'],
+  // },
 
   // DSA Navigation
   {

@@ -314,10 +314,10 @@ export default function AdminApplicationsPage() {
                               <Edit className="h-4 w-4 mr-2" />
                               Update Status
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleDownloadDocuments(app._id)}>
+                            {/* <DropdownMenuItem onClick={() => handleDownloadDocuments(app._id)}>
                               <Download className="h-4 w-4 mr-2" />
                               Download Documents
-                            </DropdownMenuItem>
+                            </DropdownMenuItem> */}
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </td>
