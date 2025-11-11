@@ -157,10 +157,10 @@ export default function UserDashboard() {
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm text-gray-600">
                             <div>
                               <p><strong>Loan Amount:</strong> {formatFullCurrency(app.loanInfo.amount)}</p>
-                              <p><strong>Course:</strong> {app.educationInfo.course}</p>
+                              {/* <p><strong>Course:</strong> {app.educationInfo.course}</p> */}
                             </div>
                             <div>
-                              <p><strong>Institute:</strong> {app.educationInfo.instituteName}</p>
+                              {/* <p><strong>Institute:</strong> {app.educationInfo.instituteName}</p> */}
                               <p><strong>Applied:</strong> {safeDate(app.createdAt)}</p>
                             </div>
                           </div>

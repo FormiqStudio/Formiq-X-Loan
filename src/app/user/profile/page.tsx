@@ -1,7 +1,5 @@
 'use client';
 
-
-
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
@@ -38,11 +36,14 @@ import { toast } from 'sonner';
 import { formatFullCurrency } from '@/lib/utils/currency';
 
 export default function UserProfilePage() {
-  // All hooks must be called before any conditional returns
+  // ALL hooks must be called at the top level, before any conditional returns
   const { data: session, status } = useSession();
   const router = useRouter();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<any>({});
+
+  // Move this hook BEFORE any conditional returns
+  const [updateProfile, { isLoading: isUpdating }] = useUpdateUserProfileMutation();
 
   // Fetch user profile using RTK Query
   const {
@@ -54,18 +55,6 @@ export default function UserProfilePage() {
     skip: !session?.user || session.user.role !== 'user'
   });
 
-  // Conditional returns after all hooks
-  if (status === 'loading') {
-    return <div>Loading...</div>;
-  }
-
-  if (!session?.user || session.user.role !== 'user') {
-    router.push('/login');
-    return null;
-  }
-
-  const [updateProfile, { isLoading: isUpdating }] = useUpdateUserProfileMutation();
-
   const userProfile = profileData?.profile;
 
   // Initialize form data when profile loads
@@ -74,6 +63,16 @@ export default function UserProfilePage() {
       setFormData(userProfile);
     }
   }, [userProfile, formData]);
+
+  // NOW conditional returns can happen
+  if (status === 'loading') {
+    return <div>Loading...</div>;
+  }
+
+  if (!session?.user || session.user.role !== 'user') {
+    router.push('/login');
+    return null;
+  }
 
   const handleInputChange = (section: string, field: string, value: any) => {
     setFormData((prev: any) => ({
@@ -348,7 +347,7 @@ export default function UserProfilePage() {
           </CardContent>
         </Card>
 
-        {/* Education Information */}
+        {/* Education Information - NOW EDITABLE */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -359,37 +358,72 @@ export default function UserProfilePage() {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <Label>Current Institution</Label>
-                <p className="text-sm text-gray-900">
-                  {formData.educationInfo?.currentInstitution || 'Not provided'}
-                </p>
+                <Label htmlFor="currentInstitution">Current Institution</Label>
+                {isEditing ? (
+                  <Input
+                    id="currentInstitution"
+                    value={formData.educationInfo?.currentInstitution || ''}
+                    onChange={(e) => handleInputChange('educationInfo', 'currentInstitution', e.target.value)}
+                  />
+                ) : (
+                  <p className="text-sm text-gray-900">
+                    {formData.educationInfo?.currentInstitution || 'Not provided'}
+                  </p>
+                )}
               </div>
               <div className="space-y-2">
-                <Label>Course</Label>
-                <p className="text-sm text-gray-900">
-                  {formData.educationInfo?.course || 'Not provided'}
-                </p>
+                <Label htmlFor="course">Course</Label>
+                {isEditing ? (
+                  <Input
+                    id="course"
+                    value={formData.educationInfo?.course || ''}
+                    onChange={(e) => handleInputChange('educationInfo', 'course', e.target.value)}
+                  />
+                ) : (
+                  <p className="text-sm text-gray-900">
+                    {formData.educationInfo?.course || 'Not provided'}
+                  </p>
+                )}
               </div>
               <div className="space-y-2">
-                <Label>Duration</Label>
-                <p className="text-sm text-gray-900">
-                  {formData.educationInfo?.duration || 'Not provided'}
-                </p>
+                <Label htmlFor="duration">Duration</Label>
+                {isEditing ? (
+                  <Input
+                    id="duration"
+                    value={formData.educationInfo?.duration || ''}
+                    onChange={(e) => handleInputChange('educationInfo', 'duration', e.target.value)}
+                    placeholder="e.g., 4 years"
+                  />
+                ) : (
+                  <p className="text-sm text-gray-900">
+                    {formData.educationInfo?.duration || 'Not provided'}
+                  </p>
+                )}
               </div>
               <div className="space-y-2">
-                <Label>Fee Structure</Label>
-                <p className="text-sm text-gray-900">
-                  {formData.educationInfo?.feeStructure 
-                    ? formatFullCurrency(formData.educationInfo.feeStructure)
-                    : 'Not provided'
-                  }
-                </p>
+                <Label htmlFor="feeStructure">Fee Structure</Label>
+                {isEditing ? (
+                  <Input
+                    id="feeStructure"
+                    type="number"
+                    value={formData.educationInfo?.feeStructure || ''}
+                    onChange={(e) => handleInputChange('educationInfo', 'feeStructure', e.target.value)}
+                    placeholder="Annual fee amount"
+                  />
+                ) : (
+                  <p className="text-sm text-gray-900">
+                    {formData.educationInfo?.feeStructure 
+                      ? formatFullCurrency(formData.educationInfo.feeStructure)
+                      : 'Not provided'
+                    }
+                  </p>
+                )}
               </div>
             </div>
           </CardContent>
         </Card>
 
-        {/* Financial Information */}
+        {/* Financial Information - NOW EDITABLE */}
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -400,31 +434,68 @@ export default function UserProfilePage() {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div className="space-y-2">
-                <Label>Annual Income</Label>
-                <p className="text-sm text-gray-900">
-                  {formData.financialInfo?.annualIncome 
-                    ? formatFullCurrency(formData.financialInfo.annualIncome)
-                    : 'Not provided'
-                  }
-                </p>
+                <Label htmlFor="annualIncome">Annual Income</Label>
+                {isEditing ? (
+                  <Input
+                    id="annualIncome"
+                    type="number"
+                    value={formData.financialInfo?.annualIncome || ''}
+                    onChange={(e) => handleInputChange('financialInfo', 'annualIncome', e.target.value)}
+                    placeholder="Annual income amount"
+                  />
+                ) : (
+                  <p className="text-sm text-gray-900">
+                    {formData.financialInfo?.annualIncome 
+                      ? formatFullCurrency(formData.financialInfo.annualIncome)
+                      : 'Not provided'
+                    }
+                  </p>
+                )}
               </div>
               <div className="space-y-2">
-                <Label>Employment Type</Label>
-                <p className="text-sm text-gray-900">
-                  {formData.financialInfo?.employmentType || 'Not provided'}
-                </p>
+                <Label htmlFor="employmentType">Employment Type</Label>
+                {isEditing ? (
+                  <Input
+                    id="employmentType"
+                    value={formData.financialInfo?.employmentType || ''}
+                    onChange={(e) => handleInputChange('financialInfo', 'employmentType', e.target.value)}
+                    placeholder="e.g., Full-time, Part-time"
+                  />
+                ) : (
+                  <p className="text-sm text-gray-900">
+                    {formData.financialInfo?.employmentType || 'Not provided'}
+                  </p>
+                )}
               </div>
               <div className="space-y-2">
-                <Label>Employer Name</Label>
-                <p className="text-sm text-gray-900">
-                  {formData.financialInfo?.employerName || 'Not provided'}
-                </p>
+                <Label htmlFor="employerName">Employer Name</Label>
+                {isEditing ? (
+                  <Input
+                    id="employerName"
+                    value={formData.financialInfo?.employerName || ''}
+                    onChange={(e) => handleInputChange('financialInfo', 'employerName', e.target.value)}
+                    placeholder="Company/Organization name"
+                  />
+                ) : (
+                  <p className="text-sm text-gray-900">
+                    {formData.financialInfo?.employerName || 'Not provided'}
+                  </p>
+                )}
               </div>
               <div className="space-y-2">
-                <Label>Work Experience</Label>
-                <p className="text-sm text-gray-900">
-                  {formData.financialInfo?.workExperience || 'Not provided'}
-                </p>
+                <Label htmlFor="workExperience">Work Experience</Label>
+                {isEditing ? (
+                  <Input
+                    id="workExperience"
+                    value={formData.financialInfo?.workExperience || ''}
+                    onChange={(e) => handleInputChange('financialInfo', 'workExperience', e.target.value)}
+                    placeholder="e.g., 5 years"
+                  />
+                ) : (
+                  <p className="text-sm text-gray-900">
+                    {formData.financialInfo?.workExperience || 'Not provided'}
+                  </p>
+                )}
               </div>
             </div>
           </CardContent>

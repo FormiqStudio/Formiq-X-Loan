@@ -221,7 +221,7 @@ export default function UserApplicationsPage() {
                           Application #{safeApp.applicationNumber}
                         </CardTitle>
                         <CardDescription>
-                          {safeApp.educationInfo.course} at {safeApp.educationInfo.instituteName}
+                          {/* {safeApp.educationInfo.course} at {safeApp.educationInfo.instituteName} */}
                         </CardDescription>
                       </div>
                       <Badge className={`${getStatusColor(safeApp.status)} border`}>
