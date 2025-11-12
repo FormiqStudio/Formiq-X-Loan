@@ -19,6 +19,7 @@ import { toast } from 'sonner';
 import { formatDistanceToNow } from 'date-fns';
 import { useSocket } from '@/hooks/useSocket';
 import Image from 'next/image';
+
 interface ChatWindowProps {
   chatId: string;
   applicationId: string;
@@ -170,9 +171,8 @@ export default function ChatWindow({
         const formData = new FormData();
         formData.append('file', selectedFile);
         formData.append('documentType', 'chat_files');
-        formData.append('applicationId', chatId); // Use chatId for better organization
+        formData.append('applicationId', chatId);
 
-        // Upload to MinIO via the files/upload API
         const response = await fetch('/api/files/upload', {
           method: 'POST',
           body: formData,
@@ -186,7 +186,6 @@ export default function ChatWindow({
         fileUrl = uploadResult.file.fileUrl;
         fileName = uploadResult.file.originalName;
 
-        // Determine message type based on file type
         if (selectedFile.type.startsWith('image/')) {
           messageType = 'image';
         } else {
@@ -197,7 +196,6 @@ export default function ChatWindow({
         setSelectedFile(null);
       }
 
-      // Send message to database
       const result = await sendMessageMutation({
         chatId,
         message: message.trim() || `Shared ${messageType === 'image' ? 'an image' : 'a file'}: ${fileName}`,
@@ -206,7 +204,6 @@ export default function ChatWindow({
         fileName,
       }).unwrap();
 
-      // Send message via WebSocket for real-time updates
       if (isConnected && session?.user) {
         const userName = session.user.name || `${session.user.firstName} ${session.user.lastName}`;
         sendSocketMessage(
@@ -219,13 +216,11 @@ export default function ChatWindow({
 
       setMessage('');
 
-      // Stop typing indicator
       if (session?.user && isConnected) {
         const userName = session.user.name || `${session.user.firstName} ${session.user.lastName}`;
         stopTyping(userName);
       }
 
-      // Force scroll to bottom after sending
       setTimeout(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
       }, 100);
@@ -234,7 +229,6 @@ export default function ChatWindow({
       setIsUploading(false);
       console.error('Failed to send message:', error);
 
-      // Add to failed messages for retry
       const tempId = `temp-${Date.now()}`;
       setFailedMessages(prev => new Set([...prev, tempId]));
 
@@ -245,13 +239,11 @@ export default function ChatWindow({
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
-      // Check file size (max 50MB for chat files)
       if (file.size > 50 * 1024 * 1024) {
         toast.error('File size must be less than 50MB');
         return;
       }
 
-      // Enhanced file type validation for chat files
       const allowedTypes = [
         'image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml',
         'application/pdf', 'text/plain', 'text/csv',
@@ -297,11 +289,9 @@ export default function ChatWindow({
 
   const renderMessage = useCallback((msg: any) => {
     const isOwnMessage = msg.senderId === session?.user?.id;
-    console.log(msg)
+    
     return (
-      <div
-        className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'} mb-3`}
-      >
+      <div className={`flex ${isOwnMessage ? 'justify-end' : 'justify-start'} mb-3`}>
         <div className={`flex ${isOwnMessage ? 'flex-row-reverse' : 'flex-row'} items-start space-x-2 max-w-[85%] sm:max-w-[70%]`}>
           <Avatar className="h-7 w-7 flex-shrink-0">
             <AvatarFallback className="text-xs">
@@ -344,7 +334,8 @@ export default function ChatWindow({
                         ? msg.fileUrl
                         : 'https://' + msg.fileUrl
                       window.open(url, '_blank')
-                    }}                  >
+                    }}
+                  >
                     <Image
                       src={`http://${msg.fileUrl}`}
                       height={40}
@@ -367,14 +358,11 @@ export default function ChatWindow({
                     ? 'bg-white/10 border-white/30'
                     : 'bg-blue-50 border-blue-200 hover:bg-blue-100'
                     }`}>
-                    <div className={`p-2 rounded-lg ${isOwnMessage ? 'bg-white/20' : 'bg-blue-100'
-                      }`}>
-                      <File className={`h-4 w-4 ${isOwnMessage ? 'text-white' : 'text-blue-600'
-                        }`} />
+                    <div className={`p-2 rounded-lg ${isOwnMessage ? 'bg-white/20' : 'bg-blue-100'}`}>
+                      <File className={`h-4 w-4 ${isOwnMessage ? 'text-white' : 'text-blue-600'}`} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className={`text-sm font-medium truncate ${isOwnMessage ? 'text-white' : 'text-gray-900'
-                        }`}>{msg.fileName}</p>
+                      <p className={`text-sm font-medium truncate ${isOwnMessage ? 'text-white' : 'text-gray-900'}`}>{msg.fileName}</p>
                     </div>
                     <div className="flex space-x-1">
                       <Button
@@ -418,6 +406,7 @@ export default function ChatWindow({
 
   return (
     <Card className="h-full flex flex-col shadow-xl border-0 bg-white overflow-hidden">
+      {/* Header - Fixed height */}
       <CardHeader className="pb-3 pt-3 bg-gradient-to-br from-blue-600 via-blue-700 to-indigo-800 text-white flex-shrink-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-4">
@@ -472,9 +461,10 @@ export default function ChatWindow({
 
       <Separator />
 
-      <CardContent className="flex-1 flex flex-col p-0">
-        {/* Messages Area */}
-        <ScrollArea className="flex-1 p-3">
+      {/* Content - Takes remaining space */}
+      <CardContent className="flex-1 flex flex-col p-0 min-h-0 overflow-hidden">
+        {/* Messages Area - Scrollable */}
+        <div className="flex-1 overflow-y-auto p-3">
           {isLoadingMessages ? (
             <div className="flex items-center justify-center h-32">
               <div className="text-sm text-gray-500">Loading messages...</div>
@@ -538,11 +528,11 @@ export default function ChatWindow({
               <div ref={messagesEndRef} />
             </div>
           )}
-        </ScrollArea>
+        </div>
 
         <Separator />
 
-        {/* File Preview */}
+        {/* File Preview - Fixed height when visible */}
         {selectedFile && (
           <div className="p-3 bg-gradient-to-r from-blue-50 to-indigo-50 border-t border-blue-200 flex-shrink-0">
             <div className="flex items-center justify-between">
@@ -573,7 +563,7 @@ export default function ChatWindow({
           </div>
         )}
 
-        {/* Message Input */}
+        {/* Message Input - Fixed at bottom */}
         <div className="p-3 border-t bg-gray-50/50 flex-shrink-0" style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}>
           <div className="flex items-end space-x-2 sm:space-x-3">
             <div className="flex-1">

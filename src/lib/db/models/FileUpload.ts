@@ -11,7 +11,7 @@ export interface IFileUpload extends Document {
   documentType?: string;
   applicationId?: mongoose.Types.ObjectId;
   cloudinaryPublicId?: string;
-  minioObjectName?: string; 
+  // minioObjectName?: string; 
   isDeleted: boolean;
   deletedAt?: Date;
   mimeType?: string;
@@ -88,10 +88,10 @@ const FileUploadSchema = new Schema<IFileUpload>({
     type: String,
     required: false,
   },
-    minioObjectName: {
-    type: String,
+  //   minioObjectName: {
+  //   type: String,
 
-  },
+  // },
   isDeleted: {
     type: Boolean,
     default: false,
