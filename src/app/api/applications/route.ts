@@ -40,63 +40,97 @@ const createApplicationSchema = z.object({
 export async function GET(request: NextRequest) {
   try {
     const session = await getAuthSession();
-    console.log('Applications API - Session:', session?.user ? { id: session.user.id, role: session.user.role, email: session.user.email } : 'No session');
+    console.log(
+      "Applications API - Session:",
+      session?.user
+        ? { id: session.user.id, role: session.user.role, email: session.user.email }
+        : "No session"
+    );
 
     if (!session?.user) {
-      console.log('Applications API - No session found, returning 401');
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      console.log("Applications API - No session found, returning 401");
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     await connectDB();
 
     const { searchParams } = new URL(request.url);
-    const status = searchParams.get('status');
-    const priority = searchParams.get('priority');
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = parseInt(searchParams.get('limit') || '10');
-    const skip = (page - 1) * limit;
+    const statusParam = searchParams.get("status"); // "pending" | "approved" | "rejected" | "under_review" | "all" | null
+    const priority = searchParams.get("priority");
+    const rawPage = parseInt(searchParams.get("page") || "1");
+    const rawLimit = parseInt(searchParams.get("limit") || "10");
 
     const query: Record<string, unknown> = {};
 
-    // Filter based on user role
-    if (session.user.role === 'user') {
+    // 🔹 User: only see their own applications
+    if (session.user.role === "user") {
       query.userId = session.user.id;
     }
-    // DSAs and Admins can see all applications (no filter for queue-based system)
-    // DSAs will review applications based on their own choice and deadlines
 
-    // Apply status filter
-    if (status && status !== 'all') {
-      query.status = status;
+    let page = rawPage;
+    let limit = rawLimit;
+
+    // 🔹 Status + pagination logic
+    if (session.user.role === "dsa") {
+      const isQueueMode = !statusParam || statusParam === "all";
+
+      if (isQueueMode) {
+        // QUEUE MODE: show only active apps, max 3
+        query.status = { $in: ["pending", "under_review"] };
+        page = 1;
+        limit = 3;
+      } else {
+        // FILTER MODE: DSA explicitly asked for a particular status
+        query.status = statusParam;
+        // use raw page & limit from query
+      }
+    } else {
+      // Admin / user: respect status filter normally
+      if (statusParam && statusParam !== "all") {
+        query.status = statusParam;
+      }
     }
 
-    // Apply priority filter
-    if (priority && priority !== 'all') {
+    // 🔹 Priority filter (optional)
+    if (priority && priority !== "all") {
       query.priority = priority;
     }
 
+    const skip = (page - 1) * limit;
+
+    // 🔹 Sorting
+    const isDSAQueueMode =
+      session.user.role === "dsa" && (!statusParam || statusParam === "all");
+
+    const sort: Record<string, 1 | -1> = isDSAQueueMode
+      ? { reviewDeadline: 1, createdAt: 1 } // queue = most urgent first
+      : { createdAt: -1 }; // otherwise newest first
+
     const applications = await LoanApplication.find(query)
-      .populate('userId', 'firstName lastName email phone')
-      .populate('assignedDSAs', 'firstName lastName email bankName dsaId')
-      .sort({ createdAt: -1 })
+      .populate("userId", "firstName lastName email phone")
+      .populate("assignedDSAs", "firstName lastName email bankName dsaId")
+      .sort(sort)
       .skip(skip)
       .limit(limit);
 
     const total = await LoanApplication.countDocuments(query);
 
     // Transform data to match frontend expectations
-    const transformedApplications = applications.map(app => {
-      const transformed = app.toObject();
+    const transformedApplications = applications.map((app) => {
+      const transformed: any = app.toObject();
 
-      // Map database fields to frontend expected fields
       if (transformed.personalDetails) {
         transformed.personalInfo = {
-          firstName: transformed.personalDetails.fullName?.split(' ')[0] || '',
-          lastName: transformed.personalDetails.fullName?.split(' ').slice(1).join(' ') || '',
-          email: transformed.userId?.email || '',
-          phone: transformed.userId?.phone || '',
+          firstName: transformed.personalDetails.fullName?.split(" ")[0] || "",
+          lastName:
+            transformed.personalDetails.fullName
+              ?.split(" ")
+              .slice(1)
+              .join(" ") || "",
+          email: transformed.userId?.email || "",
+          phone: transformed.userId?.phone || "",
           dateOfBirth: transformed.personalDetails.dateOfBirth,
-          address: transformed.personalDetails.address
+          address: transformed.personalDetails.address,
         };
       }
 
@@ -104,18 +138,16 @@ export async function GET(request: NextRequest) {
         transformed.loanInfo = {
           amount: transformed.loanDetails.amount,
           purpose: transformed.loanDetails.purpose,
-          tenure: transformed.loanDetails.tenure
+          tenure: transformed.loanDetails.tenure,
         };
       }
 
-      // Add application ID for compatibility
       if (transformed.applicationNumber) {
         transformed.applicationId = transformed.applicationNumber;
       }
 
-      // Ensure status mapping
       if (!transformed.priority) {
-        transformed.priority = 'medium';
+        transformed.priority = "medium";
       }
 
       return transformed;
@@ -127,18 +159,18 @@ export async function GET(request: NextRequest) {
         page,
         limit,
         total,
-        pages: Math.ceil(total / limit)
-      }
+        pages: Math.ceil(total / limit),
+      },
     });
-
   } catch (error) {
-    console.error('Error fetching applications:', error);
+    console.error("Error fetching applications:", error);
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { error: "Internal server error" },
       { status: 500 }
     );
   }
 }
+
 
 // POST /api/applications - Create new application
 export async function POST(request: NextRequest) {
