@@ -55,35 +55,40 @@ export default function RegisterPage() {
     resolver: zodResolver(registerSchema),
   });
 
-  const onSubmit = async (data: RegisterForm) => {
-    setIsLoading(true);
+ const onSubmit = async (data: RegisterForm) => {
+  setIsLoading(true);
 
-    try {
-      const response = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          ...data,
-          role: "user",
-        }),
-      });
+  try {
+    const formData = new FormData();
 
-      const result = await response.json();
+    // Append all your fields
+    formData.append("firstName", data.firstName);
+    formData.append("lastName", data.lastName);
+    formData.append("email", data.email);
+    formData.append("phone", data.phone);
+    formData.append("password", data.password);
+    formData.append("confirmPassword", data.confirmPassword);
+    formData.append("role", "user"); 
 
-      if (result.success) {
-        toast.success(result.message);
-        router.push("/login");
-      } else {
-        toast.error(result.error || "Registration failed");
-      }
-    } catch {
-      toast.error("An unexpected error occurred");
-    } finally {
-      setIsLoading(false);
+    const response = await fetch("/api/auth/register", {
+      method: "POST",
+      body: formData,
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      toast.success(result.message);
+      router.push("/login");
+    } else {
+      toast.error(result.error || "Registration failed");
     }
-  };
+  } catch {
+    toast.error("An unexpected error occurred");
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-12 px-4 sm:px-6 lg:px-8">
