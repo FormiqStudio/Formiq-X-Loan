@@ -9,20 +9,35 @@ import Image from "next/image";
 
 export const FinancePartnerSlider = () => {
   const partners = [
-    { name: "HDFC Bank", logo: "/banks/icici.png" },
-    { name: "ICICI Bank", logo: "/banks/icici.png" },
-    { name: "Axis Bank", logo: "/banks/axis.png" },
-    { name: "State Bank of India", logo: "/banks/sbi.png" },
-    { name: "Kotak Mahindra", logo: "/banks/kotak.png" },
-    { name: "Yes Bank", logo: "/banks/yes.png" },
-    { name: "PNB", logo: "/banks/pnb.png" },
-    { name: "Bank of Baroda", logo: "/banks/bob.png" },
+    {
+      name: "HDFC Bank",
+      logo: "https://res.cloudinary.com/dyiso4ohk/image/upload/v1766502528/hdfc-bank_elpjra.png",
+    },
+    {
+      name: "ICICI Bank",
+      logo: "https://res.cloudinary.com/dyiso4ohk/image/upload/v1766502528/icici-bank_ysvqdx.png",
+    },
+    {
+      name: "Axis Bank",
+      logo: "https://res.cloudinary.com/dyiso4ohk/image/upload/v1766502528/axis-bank_qekovo.png",
+    },
+    {
+      name: "State Bank of India",
+      logo: "https://res.cloudinary.com/dyiso4ohk/image/upload/v1766502528/sbi_dlupzm.png",
+    },
+    {
+      name: "Kotak Mahindra",
+      logo: "https://res.cloudinary.com/dyiso4ohk/image/upload/v1766502528/kotak-mahindra-bank_miidkw.png",
+    },
+    {
+      name: "Yes Bank",
+      logo: "https://res.cloudinary.com/dyiso4ohk/image/upload/v1766502528/yes-bank_vwfw74.png",
+    },
   ];
 
   return (
     <section className="w-full py-10 sm:py-12 md:py-16">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-12">
-
         <Swiper
           modules={[Autoplay]}
           loop
@@ -61,7 +76,7 @@ export const FinancePartnerSlider = () => {
                 <span
                   className="
                     text-sm sm:text-base md:text-lg
-                    font-semibold text-white
+                    font-semibold text-gray-700
                   "
                 >
                   {partner.name}
@@ -70,7 +85,6 @@ export const FinancePartnerSlider = () => {
             </SwiperSlide>
           ))}
         </Swiper>
-
       </div>
     </section>
   );

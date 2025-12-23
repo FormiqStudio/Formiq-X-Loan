@@ -1,9 +1,13 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  serverExternalPackages: ['mongoose'],
+  serverExternalPackages: ["mongoose"],
   images: {
-    domains: ['localhost', 'res.cloudinary.com','minio-cwg0go8cgkskkk4o4k4gk0o8.pinkyfoundation.com'],
+    domains: [
+      "localhost",
+      "res.cloudinary.com",
+      "minio-cwg0go8cgkskkk4o4k4gk0o8.pinkyfoundation.com",
+    ],
   },
   env: {
     MONGODB_URI: process.env.MONGODB_URI,
