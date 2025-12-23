@@ -11,8 +11,8 @@ import {
   Share,
   Info,
 } from "lucide-react";
-import Header from "@/components/header";
-import Footer from "@/components/common/footer";
+import { Header } from "@/components/common/header";
+import { Footer } from "@/components/common/footer";
 
 export default function LoanCalculatorPage() {
   const [loanAmount, setLoanAmount] = useState(500000);
