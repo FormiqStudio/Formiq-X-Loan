@@ -1,11 +1,12 @@
 'use client'
-import { GraduationCap, ChevronDown } from "lucide-react";
+import { GraduationCap, ChevronDown, Menu, X } from "lucide-react";
 import Link from "next/link";
 import React, { useState } from "react";
-import { Button } from "../ui/button";
+import { Button } from "@/components/ui/button";
 
 export const Header = () => {
   const [activeTab, setActiveTab] = useState<string>("home");
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const tabs = [
     { name: "Home", href: "/", icon: <GraduationCap className="w-4 h-4 mr-1 inline" />, key: "home" },
@@ -17,24 +18,24 @@ export const Header = () => {
   return (
     <header className="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex flex-col md:flex-row md:items-center justify-between h-20 md:h-16 py-3 md:py-0">
+        <div className="flex items-center justify-between h-16">
 
           {/* Logo */}
-          <div className="flex items-center space-x-2 mb-3 md:mb-0">
-            <GraduationCap className="h-8 w-8 text-blue-600" />
-            <span className="text-2xl font-extrabold text-slate-900 tracking-tight">
+          <div className="flex items-center space-x-2 flex-shrink-0">
+            <GraduationCap className="h-6 w-6 sm:h-8 sm:w-8 text-blue-600" />
+            <span className="text-lg sm:text-2xl font-extrabold text-slate-900 tracking-tight">
               EduLoan Pro
             </span>
           </div>
 
-          {/* Tabs Container */}
-          <div className="flex items-center justify-between md:justify-start space-x-4 bg-gray-100 rounded-full px-3 py-1 md:px-6 md:py-1.5">
+          {/* Desktop Navigation - Hidden on mobile/tablet */}
+          <div className="hidden xl:flex items-center space-x-2 bg-gray-100 rounded-full px-6 py-1.5">
             {tabs.map((tab) => (
               <Link
                 key={tab.key}
                 href={tab.href}
                 onClick={() => setActiveTab(tab.key)}
-                className={`flex items-center px-4 py-2 rounded-full font-medium transition-all duration-200
+                className={`flex items-center px-3 py-2 rounded-full font-medium transition-all duration-200 text-sm whitespace-nowrap
                   ${
                     activeTab === tab.key
                       ? "bg-blue-600 text-white shadow"
@@ -44,38 +45,72 @@ export const Header = () => {
                 {tab.icon} {tab.name}
               </Link>
             ))}
-
-{/*             
-            <div className="relative group">
-              <button className="flex items-center px-4 py-2 rounded-full text-slate-700 hover:bg-gray-200 font-medium transition-all duration-200">
-                Services <ChevronDown className="w-4 h-4 ml-1" />
-              </button>
-              <div className="absolute hidden group-hover:block mt-2 bg-white shadow-lg rounded-lg py-2 w-48">
-                <Link href="/services/loan" className="block px-4 py-2 text-slate-700 hover:bg-blue-50 hover:text-blue-600">
-                  Education Loan
-                </Link>
-                <Link href="/services/scholarship" className="block px-4 py-2 text-slate-700 hover:bg-blue-50 hover:text-blue-600">
-                  Scholarships
-                </Link>
-              </div>
-            </div> */}
           </div>
 
-          {/* Action Buttons */}
-          <div className="flex items-center space-x-4 mt-3 md:mt-0">
+          {/* Desktop Action Buttons - Hidden on mobile/tablet */}
+          <div className="hidden md:flex items-center space-x-2 lg:space-x-4 flex-shrink-0">
             <Link href="/login">
-              <Button variant="ghost" className="text-slate-900 hover:text-blue-600">
+              <Button variant="ghost" className="text-slate-900 hover:text-blue-600 text-sm lg:text-base">
                 Login
               </Button>
             </Link>
             <Link href="/register">
-              <Button className="bg-blue-600 hover:bg-blue-700 text-white">
+              <Button className="bg-blue-600 hover:bg-blue-700 text-white text-sm lg:text-base">
                 Get Started
               </Button>
             </Link>
           </div>
 
+          {/* Mobile Menu Button */}
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="xl:hidden p-2 rounded-md text-slate-700 hover:bg-gray-100"
+            aria-label="Toggle menu"
+          >
+            {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </button>
         </div>
+
+        {/* Mobile Menu */}
+        {mobileMenuOpen && (
+          <div className="xl:hidden py-4 space-y-3 border-t border-slate-200 mt-2">
+            {/* Mobile Tabs */}
+            <div className="space-y-2">
+              {tabs.map((tab) => (
+                <Link
+                  key={tab.key}
+                  href={tab.href}
+                  onClick={() => {
+                    setActiveTab(tab.key);
+                    setMobileMenuOpen(false);
+                  }}
+                  className={`flex items-center px-4 py-3 rounded-lg font-medium transition-all duration-200
+                    ${
+                      activeTab === tab.key
+                        ? "bg-blue-600 text-white shadow"
+                        : "text-slate-700 hover:bg-gray-100"
+                    }`}
+                >
+                  {tab.icon} {tab.name}
+                </Link>
+              ))}
+            </div>
+
+            {/* Mobile Action Buttons */}
+            <div className="flex flex-col space-y-2 pt-3 border-t border-slate-200 md:hidden">
+              <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
+                <Button variant="ghost" className="w-full text-slate-900 hover:text-blue-600">
+                  Login
+                </Button>
+              </Link>
+              <Link href="/register" onClick={() => setMobileMenuOpen(false)}>
+                <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+                  Get Started
+                </Button>
+              </Link>
+            </div>
+          </div>
+        )}
       </div>
     </header>
   );
