@@ -11,7 +11,7 @@ import {
   Share,
   Info,
 } from "lucide-react";
-import Header from "@/components/common/header";
+import Header from "@/components/header";
 import Footer from "@/components/common/footer";
 
 export default function LoanCalculatorPage() {

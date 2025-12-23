@@ -1,7 +1,7 @@
 import { GraduationCap } from "lucide-react";
 import React from "react";
 
-const Footer = () => {
+export const Footer = () => {
   return (
     <div>
       <footer className="bg-slate-900 text-white py-12">
@@ -52,5 +52,3 @@ const Footer = () => {
     </div>
   );
 };
-
-export default Footer;

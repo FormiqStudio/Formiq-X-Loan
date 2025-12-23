@@ -3,7 +3,7 @@ import Link from "next/link";
 import React from "react";
 import { Button } from "../ui/button";
 
-const Header = () => {
+export const Header = () => {
   return (
     <div>
       <header className="bg-white/80 backdrop-blur-sm border-b border-slate-200 sticky top-0 z-50">
@@ -32,4 +32,3 @@ const Header = () => {
   );
 };
 
-export default Header;
