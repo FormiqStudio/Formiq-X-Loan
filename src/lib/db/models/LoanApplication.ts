@@ -29,11 +29,11 @@ export interface ILoanDetails {
 }
 
 export interface IDocument {
-  type: string;
+  documentType: string;
   fileName: string;
-  filePath: string;
+  fileUrl: string;
   uploadedAt: Date;
-  status: 'pending' | 'approved' | 'rejected';
+  status: string;
   comments?: string;
 }
 
@@ -114,16 +114,14 @@ const LoanDetailsSchema = new Schema({
 });
 
 const DocumentSchema = new Schema({
-  type: { 
+  documentType: { 
     type: String, 
     required: true,
-    enum: ['Aadhar', 'PAN', 'Salary Slip', 'Bank Statement', 'ITR', 'Other']
   },
   fileName: { type: String, required: true },
-  filePath: { type: String, required: true },
+  fileUrl: { type: String, required: true },
   uploadedAt: { type: Date, default: Date.now },
-  status: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' },
-  comments: { type: String },
+  status: { type: String},
 });
 
 const StatusHistorySchema = new Schema({
